@@ -1,0 +1,37 @@
+{
+  "name": "blossom-bot",
+  "version": "1.0.0",
+  "description": "Bot for twitch chat",
+  "main": "server.js",
+  "dependencies": {
+    "denque": "^2.0.1",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "generate-function": "^2.3.1",
+    "is-property": "^1.0.2",
+    "long": "^4.0.0",
+    "lru-cache": "^6.0.0",
+    "mysql2": "^2.3.3",
+    "named-placeholders": "^1.1.2",
+    "pseudomap": "^1.0.2",
+    "safer-buffer": "^2.1.2",
+    "seq-queue": "^0.0.5",
+    "sqlstring": "^2.3.3",
+    "tmi.js": "^1.8.5",
+    "yallist": "^4.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rock-Bautumn/Blossom-Bot.git"
+  },
+  "author": "Autumn Corona, Adam Brummer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Rock-Bautumn/Blossom-Bot/issues"
+  },
+  "homepage": "https://github.com/Rock-Bautumn/Blossom-Bot#readme"
+}
