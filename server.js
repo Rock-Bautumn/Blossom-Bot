@@ -116,10 +116,10 @@ app.delete('/api/viewtime/:channelname/:username/', (req, res) => {
 
 
 // update bank time
-app.put('/api/banktime/:channelname/:username/:viewing_time', (req, res) => {
+app.put('/api/banktime/:channelname/:username/:banked_time', (req, res) => {
   con.connect(function(err) {
     if (err) throw err;
-    const sqlquery = `UPDATE ChannelViews SET viewing_time = ${req.params.viewing_time} WHERE channelname = '${req.params.channelname}' AND username = '${req.params.username}';`;
+    const sqlquery = `UPDATE ChannelViews SET banked_time = ${req.params.banked_time} WHERE channelname = '${req.params.channelname}' AND username = '${req.params.username}';`;
     con.query(sqlquery, function (err, result, fields) {
       if (err) throw err;
       console.log(result);
