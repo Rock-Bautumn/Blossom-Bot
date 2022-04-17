@@ -26,7 +26,9 @@ con.connect(function(err) {
   console.log("Connected to mysql db!");
 });
 
-let inChat = [];
+let inChat = {};
+inChat[process.env.CHANNEL_NAME] = {};
+console.log(`inChat: ${JSON.stringify(inChat)}`);
 
 con.connect(function(err) {
   if (err) throw err;
@@ -36,12 +38,12 @@ con.connect(function(err) {
     const data = result.values();
     for (const item of data) {
       console.log(item.channelname);
-      inChat.push(item.channelname);
+      inChat[item.channelname] = {};
+      console.log(`inChat: ${JSON.stringify(inChat)}`);
     }
   });
 });
-
-inChat.push(process.env.CHANNEL_NAME)
+console.log(`inChat: ${JSON.stringify(inChat)}`);
 
 
 // Define configuration options
@@ -50,8 +52,9 @@ const opts = {
     username: process.env.BOT_USERNAME,
     password: process.env.OAUTH_TOKEN
   },
-  channels: inChat
+  channels: Object.keys(inChat)
 };
+console.log(`inChat keys: ${Object.keys(inChat)}`);
 
 // Create a client with our options
 const client = new tmi.Client(opts);
