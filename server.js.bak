@@ -88,7 +88,7 @@ function onMessageHandler (target, context, msg, self) {
   }
   console.log(`nickname is ${context["display-name"]}`)
   // let nick = context.display-name;
-  let channelname = Object.keys(inChat).find(key => key.toLowerCase() === target.replace('#', ''))
+  let channelname = target.replace('#', '')
   let nick = context["display-name"]
   checkIsPlanter(channelname, nick)
 }
@@ -99,15 +99,17 @@ function checkIsPlanter (channelname, viewername) {
   // var myObject = { "mIxeDCaSEKeY": "value" };
 
   // var searchKey = 'mixedCaseKey';
-  //var asLowercase = channelname.toLowerCase();
-  let thingerton = inChat[channelname];
+  var asLowercase = channelname.toLowerCase();
+  let thingerton = inChat[Object.keys(inChat).find(key => key.toLowerCase() === asLowercase)];
   console.log(inChat['channelname'])
   console.log(`thingerton ${JSON.stringify(thingerton)}`)
   if (thingerton[viewername] === undefined) {
     console.log("it wasn't there")
-    // let fchannelname = Object.keys(inChat).find(key => key.toLowerCase() === asLowercase)
-    let url = `http://localhost:5002/api/viewtime/${channelname}/${viewername}`;
+    let fchannelname = Object.keys(inChat).find(key => key.toLowerCase() === asLowercase)
+    let url = `http://localhost:5002/api/viewtime/${fchannelname}/${viewername}`;
+    // https://api.github.com/users/github
 
+    // 'http://api.icnd.com/jokes/random/10/api/1'
     fetch(url)
       .then(response => {
         if (response.ok) {
@@ -128,7 +130,7 @@ function checkIsPlanter (channelname, viewername) {
           console.log(error);
       });
 
-    // thingerton[viewername] = false;
+    thingerton[viewername] = false;
   }
   else {
     console.log("it was there in inChat")

@@ -7,11 +7,13 @@ GRANT SELECT ON `performance_schema`.* TO 'blossom_dev'@'localhost';
 FLUSH PRIVILEGES;
 USE blossom_dev_db;
 
+-- TINYINT is same as BOOL, 0 is false, 1 is true
 CREATE table ChannelViews (
    channelview_id INT NOT NULL AUTO_INCREMENT,
    username VARCHAR(25) NOT NULL,
    channelname VARCHAR(25) NOT NULL,
    viewing_time INT NOT NULL DEFAULT 0,
    banked_time INT NOT NULL DEFAULT 0,
+   is_watching TINYINT NOT NULL DEFAULT 0,
    PRIMARY KEY ( channelview_id )
 );
