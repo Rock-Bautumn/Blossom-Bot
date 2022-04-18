@@ -114,6 +114,45 @@ function checkIsPlanter (channelname, viewername) {
           response.json().then((data) => {
             console.log(data);
             thingerton[viewername] = true;
+            let url = `http://localhost:5002/api/is_viewing/${channelname}/${viewername}/true`;
+
+            fetch(url, { method: 'PUT', body: ''})
+              .then(response => {
+                if (response.ok) {
+                  response.json().then((data) => {
+                    console.log(data);
+                  });  
+                } else {
+                  if (response.status === 404) {
+                    console.log('it was a 404')
+                  }
+                  else { throw 'There is something wrong'; }
+                }
+              }).
+              catch(error => {
+                  console.log('something went horribly bad')
+                  console.log(error);
+              });
+            url = `http://localhost:5002/api/is_credited/${channelname}/${viewername}/true`;
+
+            fetch(url, { method: 'PUT', body: ''})
+              .then(response => {
+                if (response.ok) {
+                  response.json().then((data) => {
+                    console.log('updated is credited')
+                    console.log(data);
+                  });  
+                } else {
+                  if (response.status === 404) {
+                    console.log('it was a 404')
+                  }
+                  else { throw 'There is something wrong'; }
+                }
+              }).
+              catch(error => {
+                  console.log('something went horribly bad')
+                  console.log(error);
+              });
           });  
         } else {
           if (response.status === 404) {
@@ -133,6 +172,48 @@ function checkIsPlanter (channelname, viewername) {
   else {
     console.log("it was there in inChat")
     console.log(JSON.stringify(inChat))
+    if (thingerton[viewername] === true) {
+      let url = `http://localhost:5002/api/is_viewing/${channelname}/${viewername}/true`;
+
+      fetch(url, { method: 'PUT', body: ''})
+        .then(response => {
+          if (response.ok) {
+            response.json().then((data) => {
+              console.log(data);
+            });  
+          } else {
+            if (response.status === 404) {
+              console.log('it was a 404')
+            }
+            else { throw 'There is something wrong'; }
+          }
+        }).
+        catch(error => {
+            console.log('something went horribly bad')
+            console.log(error);
+        });
+      url = `http://localhost:5002/api/is_credited/${channelname}/${viewername}/true`;
+
+      fetch(url, { method: 'PUT', body: ''})
+        .then(response => {
+          if (response.ok) {
+            response.json().then((data) => {
+              console.log('updated is credited')
+              console.log(data);
+            });  
+          } else {
+            if (response.status === 404) {
+              console.log('it was a 404')
+            }
+            else { throw 'There is something wrong'; }
+          }
+        }).
+        catch(error => {
+            console.log('something went horribly bad')
+            console.log(error);
+        });
+
+      }
   }
 }
 
@@ -142,9 +223,20 @@ function rollDice () {
   return Math.floor(Math.random() * sides) + 1;
 }
 
+function intervalFunc() {
+  console.log('Cant stop me now!');
+  // give banked time to viewers that earned credit
+  
+  // Set the viewers that have no credit to no viewer status
+
+  // Set everybody to no earned credit
+}
+
 // Called every time the bot connects to Twitch chat
 function onConnectedHandler (addr, port) {
   console.log(`* Connected to ${addr}:${port}`);
+  
+  setInterval(intervalFunc, 1800000);
 }
 
 
@@ -183,6 +275,93 @@ process.on('SIGTERM', cleanup);
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
+// http://localhost:5002/api/is_credited/${channelname}/${viewername}/true
+// update whether viewer is credited for this cycle or not
+app.put('/api/is_credited/:channelname/:username/:bool', (req, res) => {
+  con.connect(function(err) {
+    if (err) throw err;
+    let sqlquery = "oops";
+    if (req.params.bool === "true".toLowerCase()) {
+      sqlquery = `UPDATE ChannelViews SET is_credited = true WHERE channelname = '${req.params.channelname}' AND username = '${req.params.username}';`;
+    }
+    else {
+      sqlquery = `UPDATE ChannelViews SET is_credited = false WHERE channelname = '${req.params.channelname}' AND username = '${req.params.username}';`;
+    }
+    con.query(sqlquery, function (err, result, fields) {
+      if (err) throw err;
+      console.log(result);
+      if (JSON.stringify(result) !== '[]') { res.send(result) }
+      else { res.send(404, "No results"); }
+    });
+  });
+});
+
+// api/is_viewing/${channelname}/${viewername}/true
+// update whether viewer is viewing or not
+app.put('/api/is_viewing/:channelname/:username/:bool', (req, res) => {
+  con.connect(function(err) {
+    if (err) throw err;
+    let sqlquery = "oops";
+    if (req.params.bool === "true".toLowerCase()) {
+      sqlquery = `UPDATE ChannelViews SET is_watching = true WHERE channelname = '${req.params.channelname}' AND username = '${req.params.username}';`;
+    }
+    else {
+      sqlquery = `UPDATE ChannelViews SET is_watching = false WHERE channelname = '${req.params.channelname}' AND username = '${req.params.username}';`;
+    }
+    con.query(sqlquery, function (err, result, fields) {
+      if (err) throw err;
+      console.log(result);
+      if (JSON.stringify(result) !== '[]') { res.send(result) }
+      else { res.send(404, "No results"); }
+    });
+  });
+});
+
+// update all of the viewers that didn't participate to false, per 30 min cycle period
+app.put('/api/cycle/update', (req, res) => {
+  con.connect(function(err) {
+    if (err) throw err;
+    const sqlquery = 'UPDATE ChannelViews SET banked_time = banked_time + 30 WHERE is_credited = true;';
+    con.query(sqlquery, function (err, result, fields) {
+      if (err) throw err;
+      console.log(result);
+      if (JSON.stringify(result) !== '[]') {
+        // success
+        // res.send(result) 
+        con.connect(function(err) {
+          if (err) throw err;
+          const sqlquery = 'UPDATE ChannelViews SET is_watching = false WHERE is_credited = false;';
+          con.query(sqlquery, function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+            if (JSON.stringify(result) !== '[]') {
+              // success
+              // res.send(result) 
+              con.connect(function(err) {
+                if (err) throw err;
+                const sqlquery = 'UPDATE ChannelViews SET is_credited = false';
+                con.query(sqlquery, function (err, result, fields) {
+                  if (err) throw err;
+                  console.log(result);
+                  if (JSON.stringify(result) !== '[]') {
+                    // success
+                    res.send(result) 
+                    
+                    
+                    }
+                  else { res.send(404, "No results"); }
+                });
+              });
+              }
+            else { res.send(404, "No results"); }
+          });
+        });
+        
+        }
+      else { res.send(404, "No results"); }
+    });
+  });
+});
 
 // get plant image by level no
 app.get('/images/:imageNo', (req, res) => {
