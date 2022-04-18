@@ -77,19 +77,61 @@ function onMessageHandler (target, context, msg, self) {
   // Remove whitespace from chat message
   const commandName = msg.trim();
 
+  // format the channelname
+  let channelname = Object.keys(inChat).find(key => key.toLowerCase() === target.replace('#', ''))
+  
+  // set the nickname that said the message
+  let nickname = context["display-name"];
+
   // If the command is known, let's execute it
   if (commandName === '!blossom') {
     const num = rollDice();
-    client.say(target, `Welcome to blossombot! ${num}`);
+    // client.say(target, `Welcome to blossombot! ${num}`);
     console.log(`* Executed ${commandName} command`);
     console.log(`context: ${JSON.stringify(context)}`);
     console.log(`target = ${target} ${JSON.stringify(target)}`)
     console.log(`inChat is ${JSON.stringify(inChat)}`)
+    console.log(`msg is ${JSON.stringify(msg)}`)
+    console.log(`self is ${JSON.stringify(self)}`)
+    console.log(`sub is ${context.subscriber}`)
+    console.log(`mod is ${context.mod}`)
+    if ((context.subscriber === false) && (context.mod === false)) {
+       client.say(target, `@${context["display-name"]}: You must be subscribed or added by a mod.`);
+       return;
+      }
 
   }
+  if ( /^!blossom add /.test(commandName) ){
+    console.log("triggered !blossom add ")
+    username = commandName.split(' ')[2];
+    if (context.mod == false) { return; }
+    // /api/viewtime/:channelname/:username
+    url = `http://localhost:5002/api/viewtime/${channelname}/${username}`;
+   
+    fetch(url, { method: 'POST', body: ''})
+      .then(response => {
+        if (response.ok) {
+          response.json().then((data) => {
+            console.log(`we created the database entry for ${channelname} / ${username}`)
+            client.say(target, `@${username}, you are in this thing!`)
+            console.log(data);
+          });  
+        } else {
+          if (response.status === 404) {
+            console.log('it was a 404')
+          }
+          else { throw 'There is something wrong'; }
+        }
+      }).
+      catch(error => {
+          console.log('something went horribly bad')
+          console.log(error);
+      });
+  }
+
   console.log(`nickname is ${context["display-name"]}`)
   // let nick = context.display-name;
-  let channelname = Object.keys(inChat).find(key => key.toLowerCase() === target.replace('#', ''))
+  
   let nick = context["display-name"]
   checkIsPlanter(channelname, nick)
 }
