@@ -27,6 +27,7 @@ con.connect(function(err) {
 });
 
 let inChat = {};
+let joinChans = [];
 inChat[process.env.CHANNEL_NAME] = {};
 console.log(`inChat: ${JSON.stringify(inChat)}`);
 
@@ -39,6 +40,7 @@ con.connect(function(err) {
     for (const item of data) {
       console.log(item.channelname);
       inChat[item.channelname] = {};
+      joinChans.push(item.channelname);
       console.log(`inChat: ${JSON.stringify(inChat)}`);
     }
   });
@@ -52,7 +54,7 @@ const opts = {
     username: process.env.BOT_USERNAME,
     password: process.env.OAUTH_TOKEN
   },
-  channels: Object.keys(inChat)
+  channels: joinChans
 };
 console.log(`inChat keys: ${Object.keys(inChat)}`);
 
@@ -78,8 +80,13 @@ function onMessageHandler (target, context, msg, self) {
     const num = rollDice();
     client.say(target, `Welcome to blossombot! ${num}`);
     console.log(`* Executed ${commandName} command`);
-    console.log(context);
+    console.log(`context: ${JSON.stringify(context)}`);
+    console.log(`target = ${target} ${JSON.stringify(target)}`)
+    console.log(`inChat is ${JSON.stringify(inChat)}`)
   }
+  console.log(`nickname is ${context["display-name"]}`)
+  // let nick = context.display-name;
+
 } 
 
 // function to check memory then database for plant
