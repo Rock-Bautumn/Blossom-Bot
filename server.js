@@ -85,6 +85,7 @@ function onMessageHandler (target, context, msg, self) {
     console.log(`context: ${JSON.stringify(context)}`);
     console.log(`target = ${target} ${JSON.stringify(target)}`)
     console.log(`inChat is ${JSON.stringify(inChat)}`)
+    
   }
   console.log(`nickname is ${context["display-name"]}`)
   // let nick = context.display-name;
@@ -225,11 +226,28 @@ function rollDice () {
 
 function intervalFunc() {
   console.log('Cant stop me now!');
-  // give banked time to viewers that earned credit
   
-  // Set the viewers that have no credit to no viewer status
+  url = 'http://localhost:5002/api/cycle/update';
 
-  // Set everybody to no earned credit
+  fetch(url, { method: 'PUT', body: ''})
+    .then(response => {
+      if (response.ok) {
+        response.json().then((data) => {
+          console.log('server cycled the viewer data')
+          console.log(data);
+        });  
+      } else {
+        if (response.status === 404) {
+          console.log('it was a 404')
+        }
+        else { throw 'There is something wrong'; }
+      }
+    }).
+    catch(error => {
+        console.log('something went horribly bad')
+        console.log(error);
+    });
+
 }
 
 // Called every time the bot connects to Twitch chat
