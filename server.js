@@ -85,7 +85,7 @@ function onMessageHandler (target, context, msg, self) {
     console.log(`context: ${JSON.stringify(context)}`);
     console.log(`target = ${target} ${JSON.stringify(target)}`)
     console.log(`inChat is ${JSON.stringify(inChat)}`)
-    
+
   }
   console.log(`nickname is ${context["display-name"]}`)
   // let nick = context.display-name;
@@ -106,6 +106,7 @@ function checkIsPlanter (channelname, viewername) {
   console.log(`thingerton ${JSON.stringify(thingerton)}`)
   if (thingerton[viewername] === undefined) {
     console.log("it wasn't there")
+    thingerton[viewername] = {};
     // let fchannelname = Object.keys(inChat).find(key => key.toLowerCase() === asLowercase)
     let url = `http://localhost:5002/api/viewtime/${channelname}/${viewername}`;
 
@@ -114,7 +115,8 @@ function checkIsPlanter (channelname, viewername) {
         if (response.ok) {
           response.json().then((data) => {
             console.log(data);
-            thingerton[viewername] = true;
+            thingerton[viewername]["cares"] = true;
+            thingerton[viewername]["earnedcredit"] = true;
             let url = `http://localhost:5002/api/is_viewing/${channelname}/${viewername}/true`;
 
             fetch(url, { method: 'PUT', body: ''})
@@ -158,7 +160,7 @@ function checkIsPlanter (channelname, viewername) {
         } else {
           if (response.status === 404) {
             console.log('it was a 404')
-            thingerton[viewername] = false;
+            thingerton[viewername].cares = false;
           }
           else { throw 'There is something wrong'; }
         }
@@ -173,7 +175,8 @@ function checkIsPlanter (channelname, viewername) {
   else {
     console.log("it was there in inChat")
     console.log(JSON.stringify(inChat))
-    if (thingerton[viewername] === true) {
+    if ((thingerton[viewername]["cares"] === true) && (thingerton[viewername]["earnedcredit"] !== true)) {
+      
       let url = `http://localhost:5002/api/is_viewing/${channelname}/${viewername}/true`;
 
       fetch(url, { method: 'PUT', body: ''})
@@ -194,13 +197,14 @@ function checkIsPlanter (channelname, viewername) {
             console.log(error);
         });
       url = `http://localhost:5002/api/is_credited/${channelname}/${viewername}/true`;
-
+      
       fetch(url, { method: 'PUT', body: ''})
         .then(response => {
           if (response.ok) {
             response.json().then((data) => {
               console.log('updated is credited')
               console.log(data);
+              thingerton[viewername]["earnedcredit"] = true;
             });  
           } else {
             if (response.status === 404) {
@@ -213,7 +217,7 @@ function checkIsPlanter (channelname, viewername) {
             console.log('something went horribly bad')
             console.log(error);
         });
-
+      
       }
   }
 }
@@ -248,6 +252,14 @@ function intervalFunc() {
         console.log(error);
     });
 
+  for (const [channel, channeldata] of Object.entries(inChat)) {
+    console.log(`channeldata is ${JSON.stringify(channeldata)}`)
+    for (const [viewer, viewerdata] of Object.entries(channeldata)) {
+      console.log(`viewerdata ${JSON.stringify(viewerdata)}`)
+      if (viewerdata["cares"] === true) { viewerdata["earnedcredit"] = false; }
+    }
+  }
+  console.log(`cycle done. ${JSON.stringify(inChat)}`)
 }
 
 // Called every time the bot connects to Twitch chat
