@@ -99,7 +99,9 @@ function onMessageHandler (target, context, msg, self) {
        client.say(target, `@${context["display-name"]}: You must be subscribed or added by a mod.`);
        return;
       }
-
+    else {
+      setemup
+    }
   }
   if ( /^!blossom add /.test(commandName) ){
     console.log("triggered !blossom add ")
@@ -127,8 +129,60 @@ function onMessageHandler (target, context, msg, self) {
           console.log('something went horribly bad')
           console.log(error);
       });
+      return;
   }
-
+  if ( /^!blossom delete /.test(commandName) ){
+    console.log("triggered !blossom delete ")
+    username = commandName.split(' ')[2];
+    if (context.mod == false) {
+        if (username !== context['display-name']) { return; }
+        url = `http://localhost:5002/api/viewtime/${channelname}/${context['display-name']}`;
+   
+        fetch(url, { method: 'DELETE', body: ''})
+          .then(response => {
+            if (response.ok) {
+              response.json().then((data) => {
+                console.log(`we deleted the database entry for ${channelname} / ${context['display-name']}`)
+                client.say(target, `Goodbye @${context['display-name']}, you are out this thing!`)
+                console.log(data);
+              });  
+            } else {
+              if (response.status === 404) {
+                console.log('it was a 404')
+              }
+              else { throw 'There is something wrong'; }
+            }
+          }).
+          catch(error => {
+              console.log('something went horribly bad')
+              console.log(error);
+          });
+            return;
+          }
+    // /api/viewtime/:channelname/:username
+    url = `http://localhost:5002/api/viewtime/${channelname}/${username}`;
+   
+    fetch(url, { method: 'DELETE', body: ''})
+      .then(response => {
+        if (response.ok) {
+          response.json().then((data) => {
+            console.log(`we deleted the database entry for ${channelname} / ${username}`)
+            client.say(target, `Goodbye @${username}, you are out this thing!`)
+            console.log(data);
+          });  
+        } else {
+          if (response.status === 404) {
+            console.log('it was a 404')
+          }
+          else { throw 'There is something wrong'; }
+        }
+      }).
+      catch(error => {
+          console.log('something went horribly bad')
+          console.log(error);
+      });
+      return;
+  }
   console.log(`nickname is ${context["display-name"]}`)
   // let nick = context.display-name;
   
@@ -500,6 +554,38 @@ app.delete('/api/viewtime/:channelname/:username/', (req, res) => {
   });
 });
 
+// water the plant and push banked time to view time
+app.put('/api/water/:channelname/:username', (req, res) => {
+  con.connect(function(err) {
+    if (err) throw err;
+    const sqlquery = `update ChannelViews SET viewing_time = viewing_time + banked_time where is_credited = true and username = '${req.params.username}' and channelname = '${req.params.channelname}'`;
+
+    con.query(sqlquery, function (err, result, fields) {
+      if (err) throw err;
+      console.log(result);
+      if (JSON.stringify(result) !== '[]') {
+          // success
+
+        con.connect(function(err) {
+          if (err) throw err;
+          const sqlquery = `update ChannelViews set banked_time = 0 where username = '${req.params.username}' and channelname = '${req.params.channelname}'`;
+      
+          con.query(sqlquery, function (err, result, fields) {
+            if (err) throw err;
+            console.log(result);
+            if (JSON.stringify(result) !== '[]') {
+                // success
+                res.send(result)
+              }
+            else { res.send(404, "No results"); }
+          });
+        });
+
+        }
+      else { res.send(404, "No results"); }
+    });
+  });
+});
 
 // update bank time
 app.put('/api/banktime/:channelname/:username/:banked_time', (req, res) => {
