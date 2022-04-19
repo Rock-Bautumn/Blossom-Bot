@@ -2,15 +2,17 @@
 
 const express = require('express')
 const mysql = require('mysql2');
+var cors = require('cors');
+const fs = require('fs');
 
 const app = express()
 const expressport = 5002
+app.use(cors())
 
 const tmi = require('tmi.js');
 require('dotenv').config();
 
 const fetch = require('node-fetch');
-
 
 var con = mysql.createConnection({
   host: "localhost",
@@ -49,6 +51,12 @@ con.connect(function(err) {
 });
 console.log(`inChat: ${JSON.stringify(inChat)}`);
 
+let overlayhtml = "";
+fs.readFile('template/test.html', 'utf8', (err, data) => {
+  if (err) {console.error(err); return}
+  overlayhtml = data;
+  console.log(overlayhtml)
+}) 
 
 // Define configuration options
 const opts = {
@@ -489,6 +497,13 @@ app.put('/api/is_credited/:channelname/:username/:bool', (req, res) => {
   });
 });
 
+// returns overlay html for channel name
+app.get('/api/overlay/:channelname', (req, res) => {
+  let output = overlayhtml.replace('__REPLACEME__', req.params.channelname);
+  console.log(output)
+  res.send(output)
+})
+
 // api/is_viewing/${channelname}/${viewername}/true
 // update whether viewer is viewing or not
 app.put('/api/is_viewing/:channelname/:username/:bool', (req, res) => {
@@ -599,6 +614,11 @@ app.get('/api/viewers/:channelname', (req, res) => {
           level: 1,
           minimum: 60,
           imageurl: 'http://localhost:5002/images/1'
+        },
+        {
+          level: 0,
+          minimum: 0,
+          imageurl: 'http://localhost:5002/images/0'
         }
       ]
 

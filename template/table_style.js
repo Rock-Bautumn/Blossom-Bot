@@ -1,7 +1,15 @@
 $(document).ready(function () {
     $.get('http://localhost:5002/api/viewers/MajorLoaf', function (data) {
-        console.log(JSON.stringify(data));
+        console.log(data)
+        for (const item in data) {
+            console.log(item)
+            console.log(item.levelimageurl)
+            console.log(item.username)
+            $('#flowerpots').append(`<th class="tg-baqh"><img src="${data[item].levelimageurl}"></th>`);
+            $('#displaynames').append(`<td class="tg-baqh">${data[item].username}</td>`)
+        }
     })
-    $('#flowerpots').append(`<th class="tg-baqh"><img src="../images/level_1_flower_in_pot.png"></th>`);
-    $('#displaynames').append(`<td class="tg-baqh">Test Name</td>`)
 })
+
+
+// [{"username":"MariachiMayhem","viewing_time":30,"levelimageurl":"http://localhost:5002/images/0"}]

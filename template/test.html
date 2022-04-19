@@ -6,7 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://unpkg.com/merge-images"></script>
-    <script src="table_style.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+      $.get('http://localhost:5002/api/viewers/__REPLACEME__', function (data) {
+          console.log(data)
+          for (const item in data) {
+              $('#flowerpots').append('<th class="tg-baqh"><img src="' + data[item].levelimageurl + '"></th>');
+              $('#displaynames').append('<td class="tg-baqh">' + data[item].username + '</td>');
+          }
+      })
+    })
+    </script>
     <title>Document</title>
 </head>
 <body>
@@ -21,12 +31,10 @@
     </style>
     <table class="tg">
     <thead>
-      <tr id="flowerpots">
-      </tr>
+      <tr id="flowerpots"></tr>
     </thead>
     <tbody>
-      <tr id="displaynames">
-      </tr>
+      <tr id="displaynames"></tr>
     </tbody>
     </table>
 </script>
