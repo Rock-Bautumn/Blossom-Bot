@@ -7,14 +7,23 @@
     <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script src="https://unpkg.com/merge-images"></script>
     <script type="text/javascript">
-      $(document).ready(function () {
-      $.get('http://localhost:5002/api/viewers/__REPLACEME__', function (data) {
-          console.log(data)
-          for (const item in data) {
-              $('#flowerpots').append('<th class="tg-baqh"><img src="' + data[item].levelimageurl + '"></th>');
-              $('#displaynames').append('<td class="tg-baqh">' + data[item].username + '</td>');
-          }
-      })
+      function updateRender() {
+        $.get('http://localhost:5002/api/viewers/__REPLACEME__', function (data) {
+            console.log(data)
+            console.log('refreshing overlay')
+            $('#flowerpots, #displaynames').empty();
+            for (const item in data) {
+                console.log(item)
+                console.log(item.levelimageurl)
+                console.log(item.username)
+                $('#flowerpots').append(`<th class="tg-baqh"><img src="${data[item].levelimageurl}"></th>`);
+                $('#displaynames').append(`<td class="tg-baqh">${data[item].username}</td>`)
+            }
+        })
+      }
+    $(document).ready(function () {
+        updateRender();
+        setInterval(updateRender, 300000);
     })
     </script>
     <title>Document</title>

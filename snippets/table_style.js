@@ -1,5 +1,5 @@
-$(document).ready(function () {
-    $.get('http://localhost:5002/api/viewers/MajorLoaf', function (data) {
+function updateRender() {
+    $.get('http://localhost:5002/api/viewers/__REPLACEME__', function (data) {
         console.log(data)
         for (const item in data) {
             console.log(item)
@@ -9,6 +9,12 @@ $(document).ready(function () {
             $('#displaynames').append(`<td class="tg-baqh">${data[item].username}</td>`)
         }
     })
+}
+
+
+$(document).ready(function () {
+    updateRender();
+    setInterval(updateRender, 300000);
 })
 
 

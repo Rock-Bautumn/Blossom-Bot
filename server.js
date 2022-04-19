@@ -52,7 +52,7 @@ con.connect(function(err) {
 console.log(`inChat: ${JSON.stringify(inChat)}`);
 
 let overlayhtml = "";
-fs.readFile('template/test.html', 'utf8', (err, data) => {
+fs.readFile('template/overlay.html', 'utf8', (err, data) => {
   if (err) {console.error(err); return}
   overlayhtml = data;
   console.log(overlayhtml)
