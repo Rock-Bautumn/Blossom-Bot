@@ -498,6 +498,55 @@ app.get('/images/:imageNo', (req, res) => {
   res.sendFile(filepath);
 })
 
+// get watching chan viewers for channel
+app.get('/api/viewers/:channelname', (req, res) => {
+  con.connect(function(err) {
+    if (err) throw err;
+    const sqlquery = `select username, viewing_time from ChannelViews where channelname = '${req.params.channelname}' and is_watching = true;`;
+    con.query(sqlquery, function (err, result, fields) {
+      if (err) throw err;
+      console.log(result);
+      let myresult = result;
+      let levels = [
+        {
+          level: 5,
+          minimum: 600000,
+          imageurl: 'http://localhost:5002/images/5'
+        },
+        {
+          level: 4,
+          minimum: 60000,
+          imageurl: 'http://localhost:5002/images/4'
+        },
+        {
+          level: 3,
+          minimum: 6000,
+          imageurl: 'http://localhost:5002/images/3'
+        },
+        {
+          level: 2,
+          minimum: 600,
+          imageurl: 'http://localhost:5002/images/2'
+        },
+        {
+          level: 1,
+          minimum: 60,
+          imageurl: 'http://localhost:5002/images/1'
+        }
+      ]
+
+      for (const item of myresult) {
+        for (const level of levels) {
+          if (item.viewing_time >= level.minimum) { console.log(`${item.username} ${level.imageurl}`); item['levelimageurl'] = level.imageurl; break;} 
+        }
+      }
+      console.log(myresult)
+      if (JSON.stringify(result) !== '[]') { res.send(myresult) }
+      else { res.send(404, "No results"); }
+    });
+  });
+});
+
 // get view time for chan viewer
 app.get('/api/viewtime/:channelname/:username', (req, res) => {
   con.connect(function(err) {
