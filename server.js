@@ -95,18 +95,42 @@ function onMessageHandler (target, context, msg, self) {
     console.log(`self is ${JSON.stringify(self)}`)
     console.log(`sub is ${context.subscriber}`)
     console.log(`mod is ${context.mod}`)
-    if ((context.subscriber === false) && (context.mod === false)) {
+    if ((context.subscriber === false) && (context.mod === false) && (context.badges.broadcaster !== '1')) {
        client.say(target, `@${context["display-name"]}: You must be subscribed or added by a mod.`);
        return;
       }
     else {
-      setemup
+      url = `http://localhost:5002/api/viewtime/${channelname}/${context["display-name"]}`;
+
+      fetch(url, { method: 'POST', body: ''})
+        .then(response => {
+          if (response.ok) {
+            response.json().then((data) => {
+              console.log('User added self to database!')
+              console.log(data);
+              client.say(target, `@${context["display-name"]}, you are in this thing!`)
+            });  
+          } else {
+            if (response.status === 404) {
+              console.log('it was a 404')
+            }
+            else { throw 'There is something wrong'; }
+          }
+        }).
+        catch(error => {
+            console.log('something went horribly bad')
+            console.log(error);
+        });
+        return;
     }
   }
   if ( /^!blossom add /.test(commandName) ){
     console.log("triggered !blossom add ")
     username = commandName.split(' ')[2];
-    if (context.mod == false) { return; }
+    console.log(username);
+    console.log(`user mod ${context.mod}`);
+    console.log(`is a broadcaster ${context.badges.broadcaster}`);
+    if ((context.mod == false) && (context.badges.broadcaster !== '1')) {console.log('failed mod check', JSON.stringify(context)); return; }
     // /api/viewtime/:channelname/:username
     url = `http://localhost:5002/api/viewtime/${channelname}/${username}`;
    
@@ -134,7 +158,7 @@ function onMessageHandler (target, context, msg, self) {
   if ( /^!blossom delete /.test(commandName) ){
     console.log("triggered !blossom delete ")
     username = commandName.split(' ')[2];
-    if (context.mod == false) {
+    if ((context.mod == false) && (context.badges.broadcaster !== '1')) {
         if (username !== context['display-name']) { return; }
         url = `http://localhost:5002/api/viewtime/${channelname}/${context['display-name']}`;
    
@@ -182,6 +206,49 @@ function onMessageHandler (target, context, msg, self) {
           console.log(error);
       });
       return;
+  }
+  if (commandName === "!water") {
+    url = `http://localhost:5002/api/viewtime/${channelname}/${context['display-name']}`;
+    console.log('triggered water command!')
+    fetch(url, { method: 'GET'})
+      .then(response => {
+        if (response.ok) {
+          response.json().then((data) => {
+            console.log('Viewer with plant found')
+            console.log(data);
+            url = `http://localhost:5002/api/water/${channelname}/${context['display-name']}`;
+            fetch(url, { method: 'PUT', body: ''})
+              .then(response => {
+                if (response.ok) {
+                  response.json().then((data) => {
+                    console.log('Water command executed!')
+                    console.log(data);
+                    client.say(target, `@${context['display-name']}; You watered your flower!`)
+                  });  
+                } else {
+                  if (response.status === 404) {
+                    console.log('it was a 404')
+                  }
+                  else { throw 'There is something wrong'; }
+                }
+              }).
+              catch(error => {
+                  console.log('something went horribly bad')
+                  console.log(error);
+              });
+          });  
+        } else {
+          if (response.status === 404) {
+            console.log('it was a 404')
+          }
+          else { throw 'There is something wrong'; }
+        }
+      }).
+      catch(error => {
+          console.log('something went horribly bad')
+          console.log(error);
+      });
+    
   }
   console.log(`nickname is ${context["display-name"]}`)
   // let nick = context.display-name;
